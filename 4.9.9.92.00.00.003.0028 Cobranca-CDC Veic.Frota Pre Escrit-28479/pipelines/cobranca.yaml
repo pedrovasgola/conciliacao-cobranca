@@ -1,0 +1,58 @@
+# Cobrança: a diferença é baixas do EM menos o financeiro da SE5.
+# O Sinqia CT entra só para ver saldo anterior e balancete. Não entra na diferença.
+
+id: cobranca
+nome: "Conciliação - Cobranca-CDC Veic.Frota Pre Escrit-28479"
+empresa: Banco Senff
+
+parametros:
+  instituicao: "1414"
+  agencia: "19"
+  filial: "030101"
+  plano: "3"
+  produto: "28479"
+  produto_2: "28479"
+  natureza: "1011007"
+  natureza_2: "1011007"
+  conta: "4999200000030028"
+  descricao: "Cobranca-CDC Veic.Frota Pre Escrit-28479"
+
+fontes:
+  - script: protheus_se5_cobranca
+    aba: WP-02 Financeiro
+    resumo: "Financeiro do Protheus (SE5) na natureza 1011007. Baixa ENF fica de fora. Entra pela emissão ou pela baixa."
+    parametros:
+      filial: "${filial}"
+      natureza: "${natureza}"
+      natureza_2: "${natureza_2}"
+  - script: sinqia_ct_razao
+    aba: WP-03 Sinqia CT
+    resumo: Razão contábil da conta na Sinqia. Débito menos crédito.
+    parametros:
+      instituicao: "${instituicao}"
+      agencia: "${agencia}"
+      plano: "${plano}"
+      conta: "${conta}"
+  - script: sinqia_ct_balancete
+    aba: WP-05 Balancete
+    resumo: Saldo anterior da Sinqia, antes da data inicial. Entra no saldo do dia 01 da capa.
+    parametros:
+      instituicao: "${instituicao}"
+      agencia: "${agencia}"
+      plano: "${plano}"
+      conta: "${conta}"
+  - script: em_baixas
+    aba: WP-04 Baixas
+    resumo: "Baixas do Sinqia EM no produto 28479. Fora renegociação (tipo R). Histórico 2 entra."
+    parametros:
+      instituicao: "${instituicao}"
+      agencia: "${agencia}"
+      produto: "${produto}"
+      produto_2: "${produto_2}"
+
+conciliacao:
+  esquerda: em_baixas
+  direita: protheus_se5_cobranca
+  detalhe: em_baixas
+  operacao: subtracao
+  tolerancia: 0.01
